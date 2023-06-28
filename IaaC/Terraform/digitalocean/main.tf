@@ -16,15 +16,15 @@ provider "digitalocean" {
 data "digitalocean_account" "account_info" {}
 
 # Authentication with SSH keys
-data "digitalocean_ssh_key" "g15_key" {
-  name = "MiguelABFlores-G15-Personal"
+data "digitalocean_ssh_key" "ssh_key" {
+  name = "SSH-KEY-NAME"
 }
 
 # Create a Project and assign resources to it
-resource "digitalocean_project" "blueviper_project" {
-  name        = "Blue Viper"
-  description = "A project to represent development of my portfolio with CI/CD."
-  purpose     = "Web Application"
+resource "digitalocean_project" "project_name" {
+  name        = "Project Name"
+  description = "A project..."
+  purpose     = "Purpose"
   resources = [
     digitalocean_droplet.bastion[0].urn,
     digitalocean_droplet.blueviper_web[0].urn,
@@ -33,8 +33,8 @@ resource "digitalocean_project" "blueviper_project" {
 }
 
 # VPC
-resource "digitalocean_vpc" "blueviper_network" {
-  name        = "blueviper-network"
+resource "digitalocean_vpc" "vpc_network" {
+  name        = "vpc-network"
   description = "VPC for the project."
   region      = var.region["default"]
   ip_range    = "10.0.0.0/16"
@@ -44,38 +44,40 @@ resource "digitalocean_vpc" "blueviper_network" {
 locals {
   droplets = [
     {
-      name        = "bastion"
-      droplet_ref = digitalocean_droplet.bastion[0]
+      name        = "server_1"
+      droplet_ref = digitalocean_droplet.server_1[0]
     },
     {
-      name        = "blueviper_web"
-      droplet_ref = digitalocean_droplet.blueviper_web[0]
+      name        = "server_2"
+      droplet_ref = digitalocean_droplet.server_2[0]
     },
     {
-      name        = "blueviper_jenkins"
-      droplet_ref = digitalocean_droplet.blueviper_jenkins[0]
+      name        = "server_3"
+      droplet_ref = digitalocean_droplet.server_3[0]
     },
   ]
 }
 
 # We assign reserved ips to the droplets in locals
-resource "digitalocean_reserved_ip" "blueviper_reservedip" {
+resource "digitalocean_reserved_ip" "project_reservedip" {
   for_each = { for droplet in local.droplets : droplet.name => droplet }
 
   droplet_id = each.value.droplet_ref.id
   region     = each.value.droplet_ref.region
 }
 
-# Instance bastion
-resource "digitalocean_droplet" "bastion" {
+# Instance type server_1
+resource "digitalocean_droplet" "server_1" {
   count    = 1
   image    = "ubuntu-22-04-x64"
-  name     = "bastion-${var.region["default"]}-${count.index + 1}"
+  name     = "server1-${var.region["default"]}-${count.index + 1}"
+  droplet_tags = ["tag1", "tag2", "tagn..."]
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
-  ssh_keys = [data.digitalocean_ssh_key.g15_key.id]
+  initial_user  = "user"
+  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
 
-  vpc_uuid = digitalocean_vpc.blueviper_network.id
+  vpc_uuid = digitalocean_vpc.vpc_network.id
 
   lifecycle {
     create_before_destroy = true
@@ -83,15 +85,17 @@ resource "digitalocean_droplet" "bastion" {
 }
 
 # Instance creation web server
-resource "digitalocean_droplet" "blueviper_web" {
+resource "digitalocean_droplet" "server_2" {
   count    = 1
   image    = "ubuntu-22-04-x64"
-  name     = "blueviper-web-${var.region["default"]}-${count.index + 1}"
+  name     = "server2-${var.region["default"]}-${count.index + 1}"
+  droplet_tags = ["tag1", "tag2", "tagn..."]
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
-  ssh_keys = [data.digitalocean_ssh_key.g15_key.id]
+  initial_user  = "user"
+  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
 
-  vpc_uuid = digitalocean_vpc.blueviper_network.id
+  vpc_uuid = digitalocean_vpc.vpc_network.id
 
   lifecycle {
     create_before_destroy = true
@@ -99,15 +103,17 @@ resource "digitalocean_droplet" "blueviper_web" {
 }
 
 # Instance creation jenkins
-resource "digitalocean_droplet" "blueviper_jenkins" {
+resource "digitalocean_droplet" "server_3" {
   count    = 1
   image    = "ubuntu-22-04-x64"
-  name     = "blueviper-jenkins-${var.region["default"]}-${count.index + 1}"
+  name     = "server3-${var.region["default"]}-${count.index + 1}"
+  droplet_tags = ["tag1", "tag2", "tagn..."]
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
-  ssh_keys = [data.digitalocean_ssh_key.g15_key.id]
+  initial_user  = "user"
+  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
 
-  vpc_uuid = digitalocean_vpc.blueviper_network.id
+  vpc_uuid = digitalocean_vpc.vpc_network.id
 
   lifecycle {
     create_before_destroy = true
@@ -118,13 +124,13 @@ resource "digitalocean_droplet" "blueviper_jenkins" {
 output "droplets_info" {
   value = {
     droplet_limit   = data.digitalocean_account.account_info.droplet_limit
-    bastion_ip      = digitalocean_droplet.bastion[0].ipv4_address
-    bastion_type    = "Public"
-    web_server_ip   = digitalocean_droplet.blueviper_web[0].ipv4_address
-    web_server_type = "Private"
-    jenkins_ip      = digitalocean_droplet.blueviper_jenkins[0].ipv4_address
-    jenkins_type    = "Private"
-    vpc_name        = digitalocean_vpc.blueviper_network.name
-    vpc_ip_range    = digitalocean_vpc.blueviper_network.ip_range
+    server1_ip      = digitalocean_droplet.server_1[0].ipv4_address
+    server1_type    = "Public"
+    server2_ip      = digitalocean_droplet.server_2[0].ipv4_address
+    server2_type    = "Private"
+    server3_ip      = digitalocean_droplet.server_3[0].ipv4_address
+    server3_type    = "Private"
+    vpc_name        = digitalocean_vpc.vpc_network.name
+    vpc_ip_range    = digitalocean_vpc.vpc_network.ip_range
   }
 }
