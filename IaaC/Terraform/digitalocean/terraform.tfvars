@@ -1,1 +1,1 @@
-do_token = "dop_v1_78189d7ad2d8d9a3c83a11197003ea85f73684e8bfd9d6a4ce8e132d8f0cfdda"
+do_token = "api token"
