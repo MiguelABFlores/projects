@@ -25,3 +25,11 @@ variable "region" {
     "ams3"    = "Amsterdam 3"
   }
 }
+
+variable "ssh_keys" {
+  type = map(string)
+  default = {
+    "sshkey1"     = "key-registered-1"
+    "sshkey2"     = "key-registered-2"
+  }
+}
