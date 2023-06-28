@@ -16,8 +16,9 @@ provider "digitalocean" {
 data "digitalocean_account" "account_info" {}
 
 # Authentication with SSH keys
-data "digitalocean_ssh_key" "ssh_key" {
-  name = "SSH-KEY-NAME"
+data "digitalocean_ssh_key" "ssh_keys" {
+  for_each = var.ssh_keys
+  name     = each.value
 }
 
 # Create a Project and assign resources to it
@@ -75,7 +76,9 @@ resource "digitalocean_droplet" "server_1" {
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
   initial_user  = "user"
-  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
+  ssh_keys = [
+    for ssh_key in data.digitalocean_ssh_key.ssh_keys : ssh_key.id
+  ]
 
   vpc_uuid = digitalocean_vpc.vpc_network.id
 
@@ -93,7 +96,9 @@ resource "digitalocean_droplet" "server_2" {
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
   initial_user  = "user"
-  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
+  ssh_keys = [
+    for ssh_key in data.digitalocean_ssh_key.ssh_keys : ssh_key.id
+  ]
 
   vpc_uuid = digitalocean_vpc.vpc_network.id
 
@@ -111,7 +116,9 @@ resource "digitalocean_droplet" "server_3" {
   region   = var.region["default"]
   size     = var.basic_droplet_sizes["small-1"]
   initial_user  = "user"
-  ssh_keys = [data.digitalocean_ssh_key.ssh_key.id]
+  ssh_keys = [
+    for ssh_key in data.digitalocean_ssh_key.ssh_keys : ssh_key.id
+  ]
 
   vpc_uuid = digitalocean_vpc.vpc_network.id
 
